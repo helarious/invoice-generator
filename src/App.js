@@ -162,29 +162,38 @@ function App() {
 
   const generatePDF = () => {
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF({
+        compress: true,
+        precision: 2,
+        unit: 'pt',
+        format: 'a4'
+      });
       
-      // Add logo
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 80;
+      const contentWidth = pageWidth - (margin * 2);
+      const tableWidth = contentWidth; // Changed to use full content width
+      
       const logoUrl = `${process.env.PUBLIC_URL}/logo.png`;
       const img = new Image();
       img.src = logoUrl;
       
       img.onload = () => {
         try {
-          // Add logo with proper scaling
-          const logoWidth = 40;
+          // Logo positioning
+          const logoWidth = 100;
           const aspectRatio = img.height / img.width;
           const logoHeight = logoWidth * aspectRatio;
-          doc.addImage(img, 'PNG', 20, 10, logoWidth, logoHeight);
+          doc.addImage(img, 'PNG', margin, margin, logoWidth, logoHeight, '', 'FAST');
           
-          // Start text below logo
-          const startY = logoHeight + 20;
+          // Reduced space after logo by 24
+          const startY = margin + logoHeight + 56;
           
-          // Add header
+          // Header
           doc.setFontSize(20);
-          doc.text('TAX INVOICE', 20, startY);
+          doc.text('TAX INVOICE', margin, startY);
           
-          // Add business details on the left
+          // Business details (left column)
           doc.setFontSize(12);
           const businessDetails = [
             BUSINESS_DETAILS.name,
@@ -192,31 +201,47 @@ function App() {
             `ABN ${BUSINESS_DETAILS.abn}`,
             BUSINESS_DETAILS.email
           ];
-          doc.text(businessDetails, 20, startY + 20);
+          doc.text(businessDetails, margin, startY + 40);
           
-          // Add invoice details on the right
+          // Invoice details (right column)
+          const rightColumnX = pageWidth - margin - 150;
           const invoiceDetails = [
             `Date: ${orderData.date}`,
             `Invoice #${orderData.orderNumber}`
           ];
-          doc.text(invoiceDetails, 120, startY + 20);
+          doc.text(invoiceDetails, rightColumnX, startY + 40, { 
+            align: 'left'
+          });
           
-          // Add billing details if they exist
-          if (billingDetails.companyName || billingDetails.contactName || billingDetails.email) {
-            doc.text('BILLED TO:', 20, startY + 50);
-            const billingArray = [
-              billingDetails.companyName,
-              billingDetails.contactName,
-              billingDetails.email
-            ].filter(Boolean);
-            if (billingArray.length > 0) {
-              doc.text(billingArray, 20, startY + 60);
-            }
+          // Billing details section
+          const billingY = startY + 120;
+          doc.text('BILLED TO:', margin, billingY);
+          
+          // Create billing details array
+          let billingY_offset = billingY + 20;
+          
+          if (billingDetails.companyName) {
+            doc.text(billingDetails.companyName, margin, billingY_offset);
+            billingY_offset += 15;
           }
           
-          // Add table
+          if (billingDetails.contactName) {
+            doc.text(billingDetails.contactName, margin, billingY_offset);
+            billingY_offset += 15;
+          }
+          
+          if (billingDetails.email) {
+            doc.text(billingDetails.email, margin, billingY_offset);
+            billingY_offset += 15;
+          }
+          
+          // Adjust table starting position
+          const tableY = billingY_offset + 30;
+          
+          // Table with reduced width
           doc.autoTable({
-            startY: startY + 90,
+            startY: tableY,
+            margin: { left: margin + (contentWidth - tableWidth) / 2 },
             head: [['Description', 'Qty', 'Price']],
             body: [
               [orderData.description, orderData.quantity, `$${orderData.price}`],
@@ -226,29 +251,38 @@ function App() {
             ],
             styles: {
               fontSize: 10,
-              cellPadding: 5
+              cellPadding: 8,
+              lineWidth: 0.1
             },
             headStyles: {
               fillColor: [93, 124, 121],
               textColor: [255, 255, 255],
               fontStyle: 'bold'
-            }
+            },
+            columnStyles: {
+              0: { cellWidth: tableWidth * 0.6 },
+              1: { cellWidth: tableWidth * 0.15 },
+              2: { cellWidth: tableWidth * 0.25, halign: 'right' }
+            },
+            tableWidth: tableWidth
           });
-          
-          // Generate blob and create download link
-          const pdfBlob = doc.output('blob');
+
+          // Generate PDF
+          const pdfBlob = doc.output('blob', {
+            compress: true
+          });
           const url = URL.createObjectURL(pdfBlob);
           const link = document.createElement('a');
-          
           link.href = url;
           link.download = `Invoice_${orderData.orderNumber}.pdf`;
           link.click();
+          
         } catch (error) {
-          console.error('Error generating PDF:', error);
+          console.error('Error in PDF generation:', error);
         }
       };
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error initializing PDF:', error);
     }
   };
 
