@@ -1,8 +1,9 @@
-// src/App.jsx
+// src/App.js
 import React, { useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import './App.css';  // Make sure this file exists
 
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -106,79 +107,95 @@ function App() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
-      <div className="bg-white shadow rounded-lg p-6">
-        <h1 className="text-xl font-bold mb-4">Shopify Order to Tax Invoice</h1>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+      <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h1 style={{ marginBottom: '20px', fontSize: '24px', fontWeight: 'bold' }}>Shopify Order to Tax Invoice</h1>
         
         {/* Upload Section */}
-        <div className="border-2 border-dashed rounded-lg p-6 text-center mb-4">
-          <label className="cursor-pointer">
+        <div style={{ 
+          border: '2px dashed #ccc', 
+          borderRadius: '8px', 
+          padding: '20px', 
+          textAlign: 'center',
+          marginBottom: '20px',
+          cursor: 'pointer'
+        }}>
+          <label style={{ cursor: 'pointer' }}>
             <input
               type="file"
               accept=".pdf"
               onChange={handleFileUpload}
-              className="hidden"
+              style={{ display: 'none' }}
             />
-            <div>
-              <span className="text-blue-600 hover:underline">Upload Shopify order PDF</span>
-              {' '}or drag and drop
-            </div>
+            <span style={{ color: '#2563eb', textDecoration: 'underline' }}>Upload Shopify order PDF</span>
+            {' '}or drag and drop
           </label>
         </div>
 
         {/* Loading State */}
-        {loading && <div className="text-center py-4">Processing PDF...</div>}
+        {loading && <div style={{ textAlign: 'center', padding: '20px' }}>Processing PDF...</div>}
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded mb-4">
+          <div style={{ 
+            backgroundColor: '#fee2e2', 
+            color: '#dc2626', 
+            padding: '16px', 
+            borderRadius: '4px',
+            marginBottom: '20px'
+          }}>
             {error}
           </div>
         )}
 
         {/* Preview */}
         {orderData && (
-          <div className="space-y-4">
-            <div className="border rounded-lg p-6">
-              <div className="flex justify-between mb-6">
+          <div>
+            <div style={{ 
+              border: '1px solid #e5e7eb', 
+              borderRadius: '8px', 
+              padding: '20px',
+              marginBottom: '20px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">TAX INVOICE</h2>
-                  <div className="space-y-1">
-                    <p className="font-medium">{BUSINESS_DETAILS.name}</p>
+                  <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>TAX INVOICE</h2>
+                  <div>
+                    <p style={{ fontWeight: '500' }}>{BUSINESS_DETAILS.name}</p>
                     <p>{BUSINESS_DETAILS.address}</p>
                     <p>ABN {BUSINESS_DETAILS.abn}</p>
                     <p>{BUSINESS_DETAILS.email}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div style={{ textAlign: 'right' }}>
                   <p>{orderData.date}</p>
                   <p>Invoice #{orderData.orderNumber}</p>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <p className="font-medium">BILLED TO:</p>
+              <div style={{ marginBottom: '24px' }}>
+                <p style={{ fontWeight: '500' }}>BILLED TO:</p>
                 <p>{orderData.customerName}</p>
                 <p>{orderData.email}</p>
               </div>
 
-              <table className="w-full">
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">Description</th>
-                    <th className="text-left py-2">Qty</th>
-                    <th className="text-right py-2">Price</th>
+                  <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                    <th style={{ textAlign: 'left', padding: '8px 0' }}>Description</th>
+                    <th style={{ textAlign: 'left', padding: '8px 0' }}>Qty</th>
+                    <th style={{ textAlign: 'right', padding: '8px 0' }}>Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="py-2">{orderData.description}</td>
-                    <td className="py-2">{orderData.quantity}</td>
-                    <td className="text-right py-2">${orderData.price}</td>
+                    <td style={{ padding: '8px 0' }}>{orderData.description}</td>
+                    <td style={{ padding: '8px 0' }}>{orderData.quantity}</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right' }}>${orderData.price}</td>
                   </tr>
-                  <tr className="border-t">
-                    <td colSpan="2" className="py-2 font-medium">Total incl GST</td>
-                    <td className="text-right py-2 font-medium">${orderData.total}</td>
+                  <tr style={{ borderTop: '1px solid #e5e7eb' }}>
+                    <td colSpan="2" style={{ padding: '8px 0', fontWeight: '500' }}>Total incl GST</td>
+                    <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: '500' }}>${orderData.total}</td>
                   </tr>
                 </tbody>
               </table>
@@ -186,7 +203,15 @@ function App() {
 
             <button
               onClick={generatePDF}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+              style={{
+                width: '100%',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               Download Tax Invoice
             </button>

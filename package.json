@@ -1,5 +1,6 @@
 {
   "name": "invoice-generator",
+  "homepage": "https://helarious.github.io/invoice-generator",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
